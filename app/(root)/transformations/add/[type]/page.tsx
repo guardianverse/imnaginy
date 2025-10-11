@@ -1,16 +1,18 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+// app/(root)/transformations/add/[type]/page.tsx
 
-const AddTransformationTypePage = props => {
-  return (
-    <div>AddTransformationTypePage</div>
-  )
+import React from "react";
+
+type PageProps = {
+  params: { type: string };
+  // opcional, por si usas ?query=...
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
+export default function AddTransformationTypePage({ params }: PageProps) {
+  const { type } = params;
+
+  return <div>AddTransformationTypePage ({type})</div>;
 }
-
-AddTransformationTypePage.propTypes = {}
-
-export default AddTransformationTypePage
-
 
 
 // import Header from '@/components/shared/Header'
