@@ -66,9 +66,11 @@ export const Collection = ({
 
       {images.length > 0 ? (
         <ul className="collection-list">
-          {images.map((image) => (
-            <Card image={image} key={image._id} /> {/* ya es string */}
-          ))}
+        {images.map((image) => (
+          <Card image={image} key={String(image._id)} />
+        ))}
+
+          
         </ul>
       ) : (
         <div className="collection-empty">
@@ -105,7 +107,13 @@ export const Collection = ({
   );
 };
 
+
+
 const Card = ({ image }: { image: ClientImage }) => {
+  // asegura una clave válida y evita el "as" dentro del template string
+  const tKey = ((image.transformationType ?? "restore") as TransformationTypeKey);
+  const iconName = transformationTypes[tKey]?.icon ?? "image.svg";
+
   return (
     <li>
       <Link href={`/transformations/${image._id}`} className="collection-card">
@@ -124,11 +132,7 @@ const Card = ({ image }: { image: ClientImage }) => {
             {image.title}
           </p>
           <Image
-            src={`/assets/icons/${
-              transformationTypes[
-                (image.transformationType as TransformationTypeKey) ?? "restore"
-              ].icon
-            }`}
+            src={`/assets/icons/${iconName}`}
             alt={image.title}
             width={24}
             height={24}
@@ -138,3 +142,4 @@ const Card = ({ image }: { image: ClientImage }) => {
     </li>
   );
 };
+
