@@ -76,7 +76,7 @@
 }
 
 .auth {
-  @apply flex-center min-h-screen w-full bg-purple-100
+  @apply flex-center min-h-screen w-full bg-purple-100   /* esto te modofica el formulario para iniciar se sion de clerk para que quede centrada en el medio  */
 }
 
 .root {
