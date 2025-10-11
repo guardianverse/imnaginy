@@ -12,12 +12,23 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { transformationTypes } from "@/constants";
-import { IImage } from "@/lib/database/models/image.model";
 import { formUrlQuery } from "@/lib/utils";
-
 import { Button } from "../ui/button";
-
 import { Search } from "./Search";
+
+// ---- tipos “cliente” (no traigas IImage de Mongoose al cliente)
+type TransformationTypeKey = keyof typeof transformationTypes;
+
+type ClientImage = {
+  _id: string;               // <- string en cliente
+  title: string;
+  publicId: string;
+  secureURL?: string;
+  width?: number;
+  height?: number;
+  config?: Record<string, any>;
+  transformationType: string; // o TransformationTypeKey si aseguras valores
+};
 
 export const Collection = ({
   hasSearch = false,
@@ -25,7 +36,7 @@ export const Collection = ({
   totalPages = 1,
   page,
 }: {
-  images: IImage[];
+  images: ClientImage[];
   totalPages?: number;
   page: number;
   hasSearch?: boolean;
@@ -56,7 +67,7 @@ export const Collection = ({
       {images.length > 0 ? (
         <ul className="collection-list">
           {images.map((image) => (
-            <Card image={image} key={image._id} />
+            <Card image={image} key={image._id} /> {/* ya es string */}
           ))}
         </ul>
       ) : (
@@ -94,7 +105,7 @@ export const Collection = ({
   );
 };
 
-const Card = ({ image }: { image: IImage }) => {
+const Card = ({ image }: { image: ClientImage }) => {
   return (
     <li>
       <Link href={`/transformations/${image._id}`} className="collection-card">
@@ -115,7 +126,7 @@ const Card = ({ image }: { image: IImage }) => {
           <Image
             src={`/assets/icons/${
               transformationTypes[
-                image.transformationType as TransformationTypeKey
+                (image.transformationType as TransformationTypeKey) ?? "restore"
               ].icon
             }`}
             alt={image.title}
