@@ -1,52 +1,31 @@
-import { Schema, model, models } from "mongoose";
-// Traes de Mongoose:
-// Schema: para definir la forma del documento.
-// model: para crear el modelo (API de consultas).
-// models: registro de modelos ya creados (sirve para reutilizarlos en Next y evitar errores en hot-reload).
+// lib/database/models/transaction.model.ts
+import mongoose, { Schema, type Model, type InferSchemaType } from "mongoose";
 
-const TransactionSchema = new Schema({
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-//   Campo fecha de creación.
-// default: Date.now (sin paréntesis) ⇒ Mongoose ejecuta la función al insertar y guarda el momento actual.
-  stripeId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-//   ID de Stripe (p. ej., payment_intent o checkout_session).
-// required: true ⇒ obligatorio.
-// unique: true ⇒ crea un índice único; evita duplicados (útil para no procesar dos veces el mismo webhook).
+// Schema
+const TransactionSchema = new Schema(
+  {
+    createdAt: { type: Date, default: Date.now },
+    stripeId: { type: String, required: true, unique: true },
+    amount: { type: Number, required: true },
+    plan: { type: String },
+    credits: { type: Number },
+    buyer: { type: Schema.Types.ObjectId, ref: "User" },
+  }
+  // Si prefieres timestamps automáticos, usa: , { timestamps: true }
+  // y elimina el campo createdAt manual de arriba.
+);
 
-  amount: {
-    type: Number,
-    required: true,
-  },
-  // Importe pagado (normalmente en la unidad más pequeña, p. ej. céntimos).
-  plan: {
-    type: String,
-  },
-  // Información del plan comprado y créditos otorgados (opcionales).
-  credits: {
-    type: Number,
-  },
+// Tipo inferido desde el schema
+export type ITransaction = InferSchemaType<typeof TransactionSchema>;
 
-  buyer: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-  //   Referencia al usuario comprador.
-// Se guarda un ObjectId; con .populate('buyer') puedes traer el usuario completo (nombre, email, etc.).
-
-});
-
-const Transaction = models?.Transaction || model("Transaction", TransactionSchema);
-//   Patrón para reusar el modelo si ya existe (evita OverwriteModelError en Next).
-// Si no existe, lo crea con el Schema.
-// Nombre "Transaction" ⇒ la colección será transactions (Mongoose pluraliza).
+// Modelo tipado (evita la unión “too complex to represent”)
+let Transaction: Model<ITransaction>;
+try {
+  // Si ya existe el modelo, lo obtenemos sin pasar schema
+  Transaction = mongoose.model<ITransaction>("Transaction");
+} catch {
+  // Si no existe, lo creamos
+  Transaction = mongoose.model<ITransaction>("Transaction", TransactionSchema);
+}
 
 export default Transaction;
-
-// Exporta el modelo para usarlo: Transaction.find(), Transaction.create(), etc.
