@@ -1,25 +1,25 @@
-import { Document, Schema, model, models } from "mongoose";
+// import { Document, Schema, model, models } from "mongoose";
 
-export interface IImage extends Document {
-  title: string;
-  transformationType: string;
-  publicId: string;
-  secureURL: string; 
-  width?: number;
-  height?: number;
-  config?: object; 
-  transformationUrl?: string; 
-  aspectRatio?: string;
-  color?: string;
-  prompt?: string;
-  author: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-  }
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+// export interface IImage extends Document {
+//   title: string;
+//   transformationType: string;
+//   publicId: string;
+//   secureURL: string; 
+//   width?: number;
+//   height?: number;
+//   config?: object; 
+//   transformationUrl?: string; 
+//   aspectRatio?: string;
+//   color?: string;
+//   prompt?: string;
+//   author: {
+//     _id: string;
+//     firstName: string;
+//     lastName: string;
+//   }
+//   createdAt?: Date;
+//   updatedAt?: Date;
+// }
 
 
 // interface IImage: defines un tipo de TypeScript (solo para el compilador, no existe en runtime).
@@ -37,22 +37,22 @@ export interface IImage extends Document {
 // width?: number → la propiedad puede faltar (o existir con valor number).
 // width: number | undefined → la propiedad siempre existe, pero su valor puede ser number o undefined.
 
-const ImageSchema = new Schema({
-  title: { type: String, required: true },
-  transformationType: { type: String, required: true },
-  publicId: { type: String, required: true },
-  secureURL: { type: String, required: true },
-  width: { type: Number },
-  height: { type: Number },
-  config: { type: Object },
-  transformationUrl: { type: String },
-  aspectRatio: { type: String },
-  color: { type: String },
-  prompt: { type: String },
-  author: { type: Schema.Types.ObjectId, ref: 'User' },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
+// const ImageSchema = new Schema({
+//   title: { type: String, required: true },
+//   transformationType: { type: String, required: true },
+//   publicId: { type: String, required: true },
+//   secureURL: { type: String, required: true },
+//   width: { type: Number },
+//   height: { type: Number },
+//   config: { type: Object },
+//   transformationUrl: { type: String },
+//   aspectRatio: { type: String },
+//   color: { type: String },
+//   prompt: { type: String },
+//   author: { type: Schema.Types.ObjectId, ref: 'User' },
+//   createdAt: { type: Date, default: Date.now },
+//   updatedAt: { type: Date, default: Date.now }
+// });
 
 // Un Schema de Mongoose: define la forma, tipo y reglas de los documentos que guardarás en la colección (por ejemplo, images). Con este schema luego creas el modelo: model('Image', ImageSchema).
 
@@ -85,7 +85,7 @@ const ImageSchema = new Schema({
 
 
 
-const Image = models?.Image || model('Image', ImageSchema);
+// const Image = models?.Image || model('Image', ImageSchema);
 
 // models: objeto de Mongoose que guarda todos los modelos ya compilados en la conexión actual (por nombre). Viene de import { model, models } from 'mongoose'.
 // models?.Image: intenta leer el modelo llamado "Image" del registro.
@@ -103,7 +103,7 @@ const Image = models?.Image || model('Image', ImageSchema);
 // Si llamaras siempre a model('Image', ...), Mongoose lanzaría:
 // OverwriteModelError: Cannot overwrite Image model once compiled
 
-export default Image;
+// export default Image;
 
 
 
@@ -194,4 +194,50 @@ export default Image;
 // Sí, así es: primero defines el Schema y luego “compilas” el Model con model('Image', ImageSchema).
 // Qué es cada cosa
 // Schema (ImageSchema): el molde (qué campos hay, tipos, validaciones, índices…).
-// Model (Image): la herramienta creada a partir del schema y de la conexión; te da los métodos para la BD (find, create, update, …) y queda ligada a una colección (con el nombre pluralizado: "Image" → images).
+// Model (Image): la herramienta creada a partir del schema y de la conexión; te da los métodos para la BD (find, create, update, …) y queda ligada a una colección (con el nombre pluralizado: "Image" → images)
+
+// lib/database/models/image.model.ts
+import mongoose, {
+  Schema,
+  type Model,
+  type InferSchemaType,
+} from "mongoose";
+
+// --- Schema ---
+const ImageSchema = new Schema(
+  {
+    title: { type: String, required: true },
+    transformationType: { type: String, required: true },
+    publicId: { type: String, required: true },
+    secureURL: { type: String, required: true },
+
+    width: { type: Number },
+    height: { type: Number },
+    // Mixed para objetos arbitrarios
+    config: { type: Schema.Types.Mixed },
+
+    transformationUrl: { type: String },
+    aspectRatio: { type: String },
+    color: { type: String },
+    prompt: { type: String },
+
+    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  },
+  // timestamps añade createdAt/updatedAt automáticos
+  { timestamps: true }
+);
+
+// --- Tipo TS inferido desde el schema ---
+export type IImage = InferSchemaType<typeof ImageSchema>;
+
+// --- Modelo tipado con try/catch (evita la unión “too complex”) ---
+let ImageModel: Model<IImage>;
+try {
+  // Si ya existe, lo obtenemos sin pasar schema
+  ImageModel = mongoose.model<IImage>("Image");
+} catch {
+  // Si no existe, lo creamos
+  ImageModel = mongoose.model<IImage>("Image", ImageSchema);
+}
+
+export default ImageModel;
