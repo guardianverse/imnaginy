@@ -11,7 +11,7 @@
 //   )
 // }
 
-export default Home
+// export default Home
 
 import { Collection } from "@/components/shared/Collection"
 import { navLinks } from "@/constants"
